@@ -42,6 +42,9 @@
 
 #### Chapter 1: Data Visualization with ggplot2 ####
 
+library('ggplot2')
+library('tidyverse')
+
 # ggplot2 implements the grammar of graphics, a coherent system
 # for describing and building graphs. 
 
@@ -69,44 +72,6 @@ ggplot(data=mpg) +
 # ggplot(data=<DATA>) +
 #   <GEOM_FUNCTION>(mapping=aes(<MAPPINGS))
 
-## Exercises ##
-
-# 1) Run ggplot(data=mpg). What do you see?
-
-ggplot(data=mpg)
-
-# A blank plot appears
-
-# 2) How many rows are in mtcars? How many columns?
-
-# To get the number of rows:
-length(mtcars$mpg) # 32
- 
-# To get the number of columns:
-length(colnames(mtcars)) # 11
-
-# You can also convert the data.frame into a tibble,
-# which gives you this information as nrow X ncol
-as_tibble(mtcars)
-
-# 3) What does the drv variable describe?
-
-# It describes which wheels are powered in the vehicle.
-
-# 4) Make a scatterplot of hwy versus cyl
-
-ggplot(data=mpg, mapping=aes(x=hwy, y=cyl)) + 
-  geom_point(color='blue')
-
-# 5) What happens if you make a scatterplot of class versus
-#    drv? Why is the plot not useful?
-
-ggplot(data=mpg, mapping=aes(x=class, y=drv)) + 
-  geom_point(color='blue')
-
-# You get a grid-like plot (with overlapping points). The plot
-# isn't useful because the classes are not ordinal.
-
 ### Aesthetic Mappings ###
 
 # You can add a third variable, like class, to a two-dimensional
@@ -128,83 +93,6 @@ ggplot(data=mpg) +
 # One common problem when creating ggplot2 graphics is to put
 # the + in the wrong place: it has to be at the end of a line, 
 # not the beginning.
-
-## Exercises ##
-
-# 1) What's gone wrong with this code? Why are the points not
-#    blue?
-
-ggplot(data=mpg) + 
-  geom_point(
-    mapping=aes(x=displ, y=hwy, color='blue')
-  )
-
-# When within the aes() arguments, color will map based on a
-# a class variable. In this case, it is mapping everything to 
-# a single class, 'blue'. If you want the points to be blue, 
-# you have to add it as an argument outside of the aes()
-
-ggplot(data=mpg) + 
-  geom_point(
-    mapping=aes(x=displ, y=hwy),
-    color='blue'
-  )
-
-# 2) Which variables in mpg are categorical? Which variables
-#    are continuous?
-
-mpg
-
-# Looking at the columns, we see that manufacturer, model, trans,
-# drv, fl, and class are character types, implying heavily that
-# they are categorical. 
-
-# Furthermore, year and cyl can be treat as classes since you can
-# classify cars based on these values (generally a small discrete 
-# set of possible values). The only continuous columns are those 
-# that are generally measured, such as displacement and mileage. 
-
-# 3) Map a continuous variable to color, size, and shape. How
-#    do these aesthetics behave differently for categorical versus
-#    continuous variables?
-
-ggplot(data=mpg) +
-  geom_point(
-    mapping=aes(x=displ, y=hwy, color=displ)
-  )
-
-# When using a continuous variable on color, it'll result with
-# a gradient coloring scheme, likewise with size it will produce
-# a discrete set of point sizes based on bins. Shape will not work
-# however. 
-
-# 4) What happens if you map the same variable to multiple 
-#    aesthetics?
-
-ggplot(data=mpg) +
-  geom_point(
-    mapping=aes(x=displ,
-                y=hwy,
-                color=drv,
-                shape=drv,)
-  )
-
-# It coordinates the aesthetics together, so that a shape
-# correlates with a color. 
-
-# 5) What does the stroke aesthetic do? What shapes does it
-#    work with?
-
-# Stroke controls the size of the outline, and works on the 
-# shapes that feature an outline
-
-# 6) What happens if you map an aesthetic to something other 
-#    than a variable name, like aes(color=displ < 5)?
-
-ggplot(data=mpg) +
-  geom_point(
-    mapping=aes(x=displ, y=hwy, color=displ < 5)
-  )
 
 # It'll interpret the inputs as different classes, depending
 # on what the inputs look like (in this case it treats the
@@ -240,27 +128,6 @@ ggplot(data=mpg) +
   geom_point(mapping=aes(x=displ, y=hwy)) + 
   facet_grid(. ~ cyl)
 
-## Exercises ##
-
-# 1) What happens if you facet on a continuous variable?
-
-ggplot(data=mpg) + 
-  geom_point(mapping=aes(x=displ, y=hwy)) + 
-  facet_wrap(~ cty, nrow=2)
-
-# You get far too many resulting plots to make sense of anything,
-# so the bins are not meaningful
-
-# 2) What do the empty cells in a plot with facet_grid(drv ~ cyl)
-#    mean? How do they relate to this plot?
-
-ggplot(data=mpg) + 
-  geom_point(mapping=aes(x=displ, y=hwy)) + 
-  facet_wrap(drv ~ cyl)
-
-ggplot(data=mpg) + 
-  geom_point(mapping=aes(x=displ, y=hwy))
-
 ### Geometric Objects ###
 
 # A geom is the geometrical object that a plot uses to represent
@@ -290,7 +157,6 @@ ggplot(data=mpg) +
 # whenever you map an aesthetic to a discrete variable (as in 
 # the use of linetype). It's convenient to rely on this feature
 # because the group aesthetic by itself does not add a legend.
-
 ggplot(data=mpg) + 
   geom_smooth(mapping=aes(x=displ, y=hwy))
 
@@ -327,7 +193,6 @@ ggplot(data=mpg, mapping=aes(x=displ, y=hwy)) +
 # layer. Here, our smooth line displays just a subset of the 
 # mpg data. The local data argument in geom_smooth overwrites
 # the global data argument. 
-
 ggplot(data=mpg, mapping=aes(x=displ, y=hwy)) + 
   geom_point(mapping=aes(color=class)) +
   geom_smooth(
@@ -335,16 +200,201 @@ ggplot(data=mpg, mapping=aes(x=displ, y=hwy)) +
     se=FALSE
   )
 
+### Statistical Transformations ###
 
+# The following bar chart displays the total number of diamonds
+# in the diamonds dataset, grouped by cut.
 
+ggplot(data=diamonds) + 
+  geom_bar(mapping=aes(x=cut))
 
+# Boxplots compute a robust summary of the distribution and 
+# display a specially formatted box. The algorithm used to 
+# calculate new values for a graph is called a stat, or 
+# statistical transformation. geom_bar() uses stat_count() 
+# by default.
 
+# You can generally use geoms and stats interchangeably. This 
+# works because every geom has a default stat, and every stat
+# has a default geom. 
 
+ggplot(data=diamonds) + 
+  stat_count(mapping=aes(x=cut))
 
+# There are three reasons you may need to use a stat explicitly:
 
+# 1) You may want to override the default stat. In the following
+#    code, the stat of geom_bar() is changed from count to 
+#    identity, which allows the mapping of the heigth of the 
+#    bars to the raw values of y. 
 
+demo <- tribble(
+  ~a, ~b,
+  'bar_1', 20,
+  'bar_2', 30,
+  'bar_3', 40
+)
 
+ggplot(data=demo) + 
+  geom_bar(
+    mapping=aes(x=a, y=b), stat='identity'
+  )
 
+# 2) You may want to override the default mapping from transformed
+#    variables to aesthetics. For example, you might want to display
+#    a bar chart of proportion instead of count
+
+ggplot(data=diamonds) + 
+  geom_bar(
+    mapping=aes(x=cut, y=after_stat(prop), group=1)
+  )
+
+# 3) You may want to draw greater attention to the statistical 
+#    transformation. For example, you may use stat_summary(), 
+#    which summarizes the y values for each unique x value
+
+ggplot(data=diamonds) + 
+  stat_summary(
+    mapping=aes(x=cut, y=depth),
+    fun.min=min,
+    fun.max=max,
+    fun=median
+  )
+
+### Position Adjustments ###
+
+# You can color a bar chart using either the color aesthetic or
+# the fill aesthetic
+
+ggplot(data=diamonds) + 
+  geom_bar(mapping=aes(x=cut, color=cut))
+
+ggplot(data=diamonds) + 
+  geom_bar(mapping=aes(x=cut, fill=cut))
+
+# Note what happens if you map the fill aesthetic to another 
+# variable. The bars are automatically stacked; each colored
+# rectangle represents a combination of cut and clarity.
+
+ggplot(data=diamonds) + 
+  geom_bar(mapping=aes(x=cut, fill=clarity))
+
+# The stacking is performed automatically by the position adjustment
+# specified by the position argument. If you don't want a stacked
+# bar chart, you can use 'identity', 'dodge', or 'fill'
+
+# Identity will place each object exactly where it falls in the 
+# context of the graph. This is not very useful for bar charts
+
+ggplot(data=diamonds,
+       mapping=aes(x=cut, fill=clarity)
+) + 
+  geom_bar(alpha=0.20, position='identity')
+
+ggplot(
+  data=diamonds,
+  mapping=aes(x=cut, color=clarity)
+) + 
+  geom_bar(fill=NA, position='identity')
+
+# The identity position adjustment is more useful for 2D geoms,
+# like points, where it is the default
+
+# Fill works like stacking, but makes each set of stacked bars
+# the same height. This makes it easier to compare proportions
+# across groups
+
+ggplot(data=diamonds) + 
+  geom_bar(
+    mapping=aes(x=cut, fill=clarity),
+    position='fill'
+  )
+
+# Dodge places overlapping objects directly beside one another.
+# This makes it easier to compare individual values
+
+ggplot(data=diamonds) + 
+  geom_bar(
+    mapping=aes(x=cut, fill=clarity),
+    position='dodge'
+  )
+
+# There's another type of adjustment that's not useful for bar
+# charts, but it can be very useful for scatterplots. Sometimes
+# data is rounded, which leads to grid like plots (many points will
+# overlap each other. This can be avoided by adding tiny random 
+# noise to each point to avoid the overlapping nature. 
+
+ggplot(data=mpg) + 
+  geom_point(
+    mapping=aes(x=displ, y=hwy),
+    position='jitter'
+  )
+
+### Coordinate Systems ###
+
+# The default coordinate system is the Cartesian coordinate system
+# where the x and y positions act independently to find the location
+# of each point. There are other coordinate systems that are 
+# occasionally helpful.
+
+# coord_flip() switches the x and y axes. This is useful if you want
+# horizontal boxplots. It's also useful for long labels.
+
+ggplot(data=mpg, mapping=aes(x=class, y=hwy)) + 
+  geom_boxplot()
+
+ggplot(data=mpg, mapping=aes(x=class, y=hwy)) + 
+  geom_boxplot() + 
+  coord_flip()
+
+# coord_quickmap() sets the aspect ratio correctly for maps. This
+# is important if you're plotting spatial data with ggplot2
+
+nz <- map_data('nz')
+
+ggplot(data=nz, mapping=aes(x=long, y=lat, group=group)) + 
+  geom_polygon(fill='white', color='black')
+
+ggplot(data=nz, mapping=aes(x=long, y=lat, group=group)) + 
+  geom_polygon(fill='white', color='black') + 
+  coord_quickmap()
+
+# coord_polar() uses polar coordinates, which reveal an interesting
+# connection between a bar chart and a Coxcomb chart
+
+bar <- ggplot(data=diamonds) + 
+  geom_bar(
+    mapping=aes(x=cut, fill=cut),
+    show.legend=FALSE,
+    width=1
+  ) + 
+  theme(aspect.ratio=1) + 
+  labs(x=NULL, y=NULL)
+
+bar + coord_flip()
+bar + coord_polar()
+
+### Layered Grammar of Graphics ###
+
+# Let's add position adjustments, stats, coordinate systems, and
+# faceting to our code template
+
+# ggplot(data=<DATA>) + 
+#   <GEOM_FUNCTION>(
+#     mapping=aes(<MAPPINGS>),
+#     stat=<STAT>,
+#     position=<POSTION>
+#   ) + 
+#   <COORDINATE_FUNCTION> + 
+#   <FACET_FUNCTION>
+
+# The grammar of graphics is based on the insight that you can uniquely
+# describe any plot as a combination of a dataset, a geometry, a set
+# of mappings, a statistical transformation, a position adjustment, a
+# coordinate system, and a faceting scheme. 
+  
+  
 
 
 
