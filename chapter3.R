@@ -181,7 +181,239 @@ transmute(flights,
           hour = dep_time %/% 100,                   # integer division
           minute = dep_time %% 100)                  # modulo
 
-# 
+# Logarithms are a useful transformation for dealing with data that
+# ranges across multiple orders of magnitude. They also convert 
+# multiplicative relationships to additive.
 
+# All else being equal, it's recommended to use log base 2 because it's
+# easier to interpret: a difference of 1 on that log scale corresponds to 
+# doubling on the original scale. 
+
+log2(c(4, 2, 8, 6, 10))
+
+# lead() and lag() allow you to refer to leading or lagging values. 
+# This allows you to compute running differences or find when values
+# change in the data
+x <- 1:10
+lag(x)
+lead(x)
+
+# R provides functions for running sums, products, mins, and maxes:
+x <- c(5, 1, 6, 2, 6, 7, 3, 8, 10)
+cumsum(x)
+cumprod(x)
+cummin(x)
+cummax(x)
+cummin(x)
+
+# If you need rolling aggregates (computed over a window) try the 
+# RcppRoll package
+
+# min_rank() does the most usual type of ranking (e.g. first, second,
+# third, fourth). The default gives the smallest values the smallest
+# ranks; use desc() to give the largest values the smallest ranks
+
+y <- c(1, 2, 2, 3, 4)
+# Rank smallest to largest
+min_rank(y)
+# Rank largest to smallest
+min_rank(desc(y))
+
+### Summarize Data ###
+
+# summarize() collapses a data frame to a single row:
+summarize(flights, delay=mean(dep_delay, na.rm=TRUE))
+
+# Summarize isn't useful unless we pair it with a group by:
+by_day <- group_by(flights, year, month, day)
+summarize(by_day, delay=mean(dep_delay, na.rm=TRUE))
+
+# Suppose you want to explore the relationship between distance
+# and average delay for each location:
+by_dest <- group_by(flights, dest)
+delay <- summarize(by_dest, 
+                   count=n(),
+                   dist=mean(distance, na.rm=TRUE),
+                   delay=mean(arr_delay, na.rm=TRUE)
+                   )
+delay <- filter(delay, count > 20, dest != 'HNL')
+
+ggplot(data=delay, mapping=aes(x=dist, y=delay)) + 
+        geom_point(aes(size=count), alpha=1/3) + 
+        geom_smooth(se=FALSE)
+
+# There are three steps to prepare this data:
+# 1. Group flights by destination
+# 2. Summarize to compute distance, average delay, and number of flights
+# 3. Filter to remove noisy points and Honolulu airport
+
+# All this can be done with piping:
+
+delays <- flights %>%
+        group_by(dest) %>%
+        summarize(
+                count=n(),
+                dist=mean(distance, na.rm=TRUE),
+                delay=mean(arr_delay, na.rm=TRUE)
+        ) %>%
+        filter(count > 20, dest != 'HNL')
+
+# The above focuses on the transformations, not on what's being 
+# transformed. You can read it as a series of statements. You 
+# can view the %>% character as 'then'
+
+
+# Note that all aggregate functions have an na.rm argument, which
+# removes the missing values prior to computation
+flights %>% 
+        group_by(year, month, day) %>%
+        summarize(mean=mean(dep_delay, na.rm=TRUE))
+
+# We could also first remove the null values:
+not_cancelled <- flights %>%
+        filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %>% 
+        group_by(year, month, day) %>%
+        summarize(mean=mean(dep_delay))
+
+# Whenever you do any aggregation, it's always a good idea to include
+# either a count or a count of non-null values (that way you can check
+# that you're not drawing conclusions based on very small amounts of data)
+
+# Let's look at the planes that have the highest average delays:
+delays <- not_cancelled %>%
+        group_by(tailnum) %>%
+        summarize(
+                delay=mean(arr_delay)
+        )
+
+ggplot(data=delays, mapping=aes(x=delay)) + 
+        geom_freqpoly(binwidth=10)
+# We can get more insight if we draw a scatter plot:
+delays <- not_cancelled %>%
+        group_by(tailnum) %>%
+        summarize(
+                delay=mean(arr_delay, na.rm=TRUE),
+                n=n()
+        )
+
+ggplot(data=delays, mapping=aes(x=n, y=delay)) + 
+        geom_point(alpha=1/10)
+
+# When looking at this sort of plot, it's often useful to filter
+# out the groups with the smallest numbers of observations, so 
+# that you can see more of the pattern and less of the extreme
+# variation in the smallest groups. 
+
+delays %>% 
+        filter(n > 25) %>%                   # You can pipe output to ggplot
+        ggplot(mapping=aes(x=n, y=delay)) +  # Go back to ggplot notation
+        geom_point(alpha=0.10)
+
+# Median:
+x <- c(5, 1, 6, 3, 7, 4, 8, 4, 8, 9)
+median(x)
+
+# Quantile is a generalization of the median:
+quantile(x, 0.25)
+
+# Minimum/Maximum:
+min(x)
+max(x)
+
+# Standard deviation:
+sd(x)
+
+# Interquartile range:
+IQR(x)
+
+# Median absolute deviation:
+mad(x)
+
+# There are functions for position measures:
+x[1]
+first(x)
+
+x[2]
+nth(x, 2)
+
+x[length(x)]
+last(x)
+
+# We can find the first and last departure for each day:
+not_cancelled %>%
+        group_by(year, month, day) %>%
+        summarize(
+                first_dep=first(dep_time),
+                last_dep=last(dep_time)
+        )
+
+# These functions are complementary to filtering on ranks. Filtering
+# gives you all variables, with each observation in a separate row:
+
+not_cancelled %>%
+        group_by(year, month, day) %>%
+        mutate(r=min_rank(desc(dep_time))) %>%
+        filter(r %in% range(r))
+
+# n() takes no arguments and returns the size of the current group. To
+# count the number of non-missing values:
+sum(!is.na(c(1, 2, 3, NA, 5)))
+
+# To count the number of distinct values:
+n_distinct(c(1, 2, 2, 3, 4, 4, 5))
+
+# Which destinations have the most carriers?
+not_cancelled %>%
+        group_by(dest) %>%
+        summarize(carriers=n_distinct(carrier)) %>%
+        arrange(desc(carriers))
+
+# There is also a simple helper function:
+not_cancelled %>%
+        count(dest)
+
+# You can also provide a weight variable to sum over another column
+# instead of just counting:
+not_cancelled %>% # calculate total distance flown for each plane
+        count(tailnum, wt=distance)
+
+# Since TRUE translate to 1 and FALSE translates to 0, this makes
+# sum() and mean() useful for counting the number of TRUE values 
+# and the proportion of TRUE values, respectively.
+
+# How many flights left before 5am?
+not_cancelled %>%
+        group_by(year, month, day) %>%
+        summarize(n_early=sum(dep_time < 500))
+
+# What proportion of fights are delayed by more than an hour?
+not_cancelled %>%
+        group_by(year, month, day) %>%
+        summarize(hour_perc=mean(arr_delay > 60))
+
+# When you group by multiple variables, each summary peels off one 
+# level of the grouping. This makes it easy to progressively roll
+# up a data set:
+daily <- group_by(flights, year, month, day)
+
+per_day <- summarize(daily, flights=n())
+
+per_month <- summarize(per_day, flights=sum(flights))
+
+per_year <- summarize(per_month, flights=sum(flights))
+
+# Be careful when progressively rolling up summaries: it's okay for
+# sums and counts, but you neet to think about weighting means and
+# variances, and it's not possible to do it exactly for rank-based
+# statistics like the median (group-wise median is not the same as
+# overall median). 
+
+# If you need to remove grouping and return to operations on ungrouped
+# data, use:
+daily %>%
+        ungroup() %>%           # no longer grouped by date
+        summarize(flights=n())  # all flights
 
 
