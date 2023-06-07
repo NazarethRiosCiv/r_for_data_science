@@ -1,6 +1,6 @@
-#### Chapter 3: Data Transformation with dplyr ####
+#### Chapter 3: Data Transformation with dplyr ################################
 
-### Setup ###
+### Setup #####################################################################
 
 # Visualization is an important tool for insight generation, but it's
 # rare that you'll get the data in exactly the right form you need. Often,
@@ -57,7 +57,7 @@ View(flights)
 #    using the variable names (without quotes)
 # 3) The result is a new dataframe (or tibble)
 
-### Filtering Rows ###
+### Filtering Rows ############################################################
 
 # filter() allows you to subset observations based on their values. 
 # The first argument is the name of the dataframe. The second and
@@ -102,7 +102,7 @@ filter(df, x > 1)
 
 filter(df, is.na(x) | x > 1)
 
-### Arranging Rows ###
+### Arranging Rows ############################################################
 
 # arrange() changes the order of the rows. It takes a dataframe and
 # a set of column names to order by. If you provide more than one
@@ -117,7 +117,7 @@ df <- tibble(x=c(5, 2, NA))
 arrange(df, x)
 arrange(df, desc(x))
 
-### Selecting Columns ###
+### Selecting Columns #########################################################
 
 # select() allows you to zoom in on a useful subset of columns based
 # on their names
@@ -143,7 +143,7 @@ select(flights, -(year:day))
 # drops any columns not mentioned. Instead, use rename(df, new_name=old_name)
 rename(flights, tail_num=tailnum)
 
-### Mutating Data ###
+### Mutating Data #############################################################
 
 # It's often useful to add new columns that are functions of existing
 # columns, which can be done with mutate()
@@ -219,7 +219,7 @@ min_rank(y)
 # Rank largest to smallest
 min_rank(desc(y))
 
-### Summarize Data ###
+### Summarize Data ############################################################
 
 # summarize() collapses a data frame to a single row:
 summarize(flights, delay=mean(dep_delay, na.rm=TRUE))
@@ -415,5 +415,38 @@ per_year <- summarize(per_month, flights=sum(flights))
 daily %>%
         ungroup() %>%           # no longer grouped by date
         summarize(flights=n())  # all flights
+
+### Grouped Mutates ###########################################################
+
+# Grouping is most useful with summarize(), but can also be used with mutate
+# and filter()
+
+# Find the worst members of each group:
+flights_sml %>% 
+        group_by(year, month, day) %>%
+        filter(rank(desc(arr_delay)) < 10)
+
+# Find all groups bigger than a threshold:
+popular_dests <- flights %>%
+        group_by(dest) %>%
+        filter(n() > 365)
+
+# Standardize to compute per group metrics:
+popular_dests %>%
+        filter(arr_delay > 0) %>%
+        mutate(prop_delay = arr_delay / sum(arr_delay)) %>%
+        select(year:day, dest, arr_delay, prop_delay)
+
+# Functions that work most naturally in grouped mutates and filters are known
+# as window functions, rather than summary functions for summaries. A window
+# function is a variation on an aggregation, which takes n inputs and returns 
+# n values (each dependent on the previous/future value(s))
+# 
+# Examples: cumsum(), cummean(), rank(), lead(), lag()
+
+
+
+
+
 
 

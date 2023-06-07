@@ -1,6 +1,6 @@
-#### Preface ####
+#### Preface ##################################################################
 
-## Data Science Model ##
+### Data Science Model ########################################################
 
 # First you must import your data. This typically means that you take
 # data stored in a file, database, or web API, and load it into a 
@@ -40,7 +40,7 @@
 # and again. The goal is to generate many promising leads that you 
 # can later explore in more depth.
 
-#### Chapter 1: Data Visualization with ggplot2 ####
+#### Chapter 1: Data Visualization with ggplot2 ###############################
 
 library('ggplot2')
 library('tidyverse')
@@ -67,12 +67,12 @@ library('tidyverse')
 ggplot(data=mpg) + 
   geom_point(mapping=aes(x=displ, y=hwy))
 
-### Graphing Template ###
+### Graphing Template #########################################################
 
 # ggplot(data=<DATA>) +
 #   <GEOM_FUNCTION>(mapping=aes(<MAPPINGS))
 
-### Aesthetic Mappings ###
+### Aesthetic Mappings ########################################################
 
 # You can add a third variable, like class, to a two-dimensional
 # scatterplot by mapping it to an aesthetic, which is a visual 
@@ -98,7 +98,7 @@ ggplot(data=mpg) +
 # on what the inputs look like (in this case it treats the
 # booleans as two separate classes)
 
-### Facets ###
+### Facets ####################################################################
 
 # Another way to add additional variables is to split your plot
 # into facets, which are subplots that each display one subset
@@ -128,7 +128,7 @@ ggplot(data=mpg) +
   geom_point(mapping=aes(x=displ, y=hwy)) + 
   facet_grid(. ~ cyl)
 
-### Geometric Objects ###
+### Geometric Objects #########################################################
 
 # A geom is the geometrical object that a plot uses to represent
 # data. To change the geom in your plot, change the geom function
@@ -200,7 +200,7 @@ ggplot(data=mpg, mapping=aes(x=displ, y=hwy)) +
     se=FALSE
   )
 
-### Statistical Transformations ###
+### Statistical Transformations ###############################################
 
 # The following bar chart displays the total number of diamonds
 # in the diamonds dataset, grouped by cut.
@@ -261,7 +261,7 @@ ggplot(data=diamonds) +
     fun=median
   )
 
-### Position Adjustments ###
+### Position Adjustments ######################################################
 
 # You can color a bar chart using either the color aesthetic or
 # the fill aesthetic
@@ -331,7 +331,7 @@ ggplot(data=mpg) +
     position='jitter'
   )
 
-### Coordinate Systems ###
+### Coordinate Systems ########################################################
 
 # The default coordinate system is the Cartesian coordinate system
 # where the x and y positions act independently to find the location
@@ -375,7 +375,7 @@ bar <- ggplot(data=diamonds) +
 bar + coord_flip()
 bar + coord_polar()
 
-### Layered Grammar of Graphics ###
+### Layered Grammar of Graphics ###############################################
 
 # Let's add position adjustments, stats, coordinate systems, and
 # faceting to our code template
