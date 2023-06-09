@@ -380,7 +380,7 @@ bar + coord_polar()
 # Let's add position adjustments, stats, coordinate systems, and
 # faceting to our code template
 
-# ggplot(data=<DATA>) + 
+# my_plot <- ggplot(data=<DATA>) + 
 #   <GEOM_FUNCTION>(
 #     mapping=aes(<MAPPINGS>),
 #     stat=<STAT>,
@@ -388,6 +388,9 @@ bar + coord_polar()
 #   ) + 
 #   <COORDINATE_FUNCTION> + 
 #   <FACET_FUNCTION>
+#
+# # To save your plot (with better resolution)
+# ggsave(my_plot, file = "my_plot.png", dpi = 700) # adjust dpi accordingly
 
 # The grammar of graphics is based on the insight that you can uniquely
 # describe any plot as a combination of a dataset, a geometry, a set
