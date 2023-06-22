@@ -332,6 +332,24 @@ ggplot(data = smaller, mapping = aes(x = carat, y = price)) +
 ggplot(data = smaller, mapping = aes(x = carat, y = price)) + 
   geom_boxplot(mapping = aes(group = cut_number(carat, 20)))
 
+# Two-dimensional plots reveal outliers that are not visible in one-dimensional
+# plots. Some points may have unusual combinations of x and y values, making
+# them outliers even though their x and y values appear normal separately:
+ggplot(data = diamonds) + 
+  geom_point(mapping = aes(x = x, y = y)) + 
+  coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
+
+### Pattern and Models ********************************************************
+
+# Patterns in your data provide clues about relationships between variables.
+# 1. Could this pattern be due to coincidence?
+# 2. How can you describe the relationship implied by the pattern?
+# 3. How strong is the relationship implied by the pattern?
+# 4. What other variables might affect the relationship?
+# 5. Does the relationship change if you look at individual subgroups
+#    of the data?
+
+
 
 
 
