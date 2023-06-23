@@ -339,7 +339,7 @@ ggplot(data = diamonds) +
   geom_point(mapping = aes(x = x, y = y)) + 
   coord_cartesian(xlim = c(4, 11), ylim = c(4, 11))
 
-### Pattern and Models ********************************************************
+### Pattern and Models ########################################################
 
 # Patterns in your data provide clues about relationships between variables.
 # 1. Could this pattern be due to coincidence?
@@ -349,10 +349,40 @@ ggplot(data = diamonds) +
 # 5. Does the relationship change if you look at individual subgroups
 #    of the data?
 
+# Patterns provide a useful tool for data scientists because they reveal 
+# covariation. If you think of variation as a phenomenon that creates
+# uncertainty, covariation is a phenomenon that reduces it; if two variables
+# covary, you can use the values of one variable to make better predictions
+# about the values of the second. If the covariation is due to a causal 
+# relationship (a special case), then you can use the value of one variable
+# to control the value of the other. 
 
+# Models are a tool for extracting patterns out of data. It's possible to use
+# a model to remove the strong relationship between two variables so we can 
+# explore the subtleties that remain. 
 
+# The following code fits a model that predicts price and carat and then 
+# computes the residuals (the difference between the predicted values and
+# the actual value). The residuals give us a view of the price of the diamond
+# once the effect of carat is removed:
+library(modelr)
 
+model <- lm(log(price) ~ log(carat), data = diamonds)
 
+diamonds2 <- diamonds %>%
+  add_residuals(model) %>% 
+  mutate(resid = exp(resid))   # Residual values greater than 1 are positive
+
+# Clearly not normally distributed white noise
+ggplot(data = diamonds2) + 
+  geom_point(mapping = aes(x = carat, y = resid))
+
+# Once you've removed teh strong relationship between carat and price, you 
+# can see what you expect in the relationship betweet cut and price; relative
+# to their size, better quality diamonds are more expensive
+ggplot(data = diamonds2) + 
+  geom_boxplot(mapping = aes(x = cut, y = resid))
+ 
 
 
 
